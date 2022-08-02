@@ -1,6 +1,7 @@
 package com.lamtlo.parking;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Keep track of capacity
@@ -8,51 +9,54 @@ import java.util.HashMap;
  * Keep track of parking space
  */
 public class ParkingLot {
-   private String parkingLotName;
-   private String parkingLotAddress;
-   private int maxCapacity;
-   private HashMap<Car, ParkingSpot> carLocation;
+   private final int maxCapacity;
+   private final List<Car> parking;
    private int remainingSpace;
-   public ParkingLot(int max_capacity, String name, String address) {
-      this.parkingLotName = name;
-      this.parkingLotAddress = address;
-      this.maxCapacity = max_capacity;
-      this.carLocation = new HashMap<>(maxCapacity);
-      this.remainingSpace = max_capacity;
+   public ParkingLot(int maxCapacity) {
+      this.maxCapacity = maxCapacity;
+      remainingSpace = maxCapacity;
+      parking = new ArrayList<>(maxCapacity);
+      for (int i = 0; i < maxCapacity; i++) {
+         parking.add(null);
+      }
    }
 
    public int getRemainingCapacity() {
-      return this.remainingSpace;
+      return remainingSpace;
    }
 
    public int getParkingSpotId(Car car) {
-      if (!this.carLocation.containsKey(car)) {
-         return -1;
+      if (!parking.contains(car)) {
+         throw new RuntimeException(String.format("Car not found, id = %d", car.getId()));
       }
       else {
-         return this.carLocation.get(car).getId();
+         return parking.indexOf(car);
       }
    }
 
-   public int assignParkingSpaceNumber(Car car, ParkingSpot spot) {
-      if (spot.isOccupied()) {
-         return -1;
+   public int assignParkingSpaceNumber(Car car) {
+      if (parking.contains(car)) {
+         throw new RuntimeException(String.format("Car already parked, id = %d", car.getId()));
       }
-      else {
-         this.carLocation.put(car, spot);
-         this.remainingSpace--;
-         return spot.getId();
+      for (int i = 0; i < maxCapacity; i++) {
+         if (parking.get(i) == null) {
+            parking.set(i, car);
+            remainingSpace--;
+            return i;
+         }
       }
-   }
-   public void unassignParkingSpace(Car car) {
-      if (this.carLocation.containsKey(car)) {
-         this.carLocation.remove(car);
-         this.remainingSpace++;
-      }
+      throw new RuntimeException("No parking available");
    }
 
-   public static void main(String[] args) {
-      System.out.println("Some thing");
+   public void removeCarFromParkingSpace(Car car) {
+      int i = parking.indexOf(car); // indexOf() returns -1 if car not found in parking
+      if (i == -1) {
+         throw new RuntimeException(String.format("Car not found, id = %d", car.getId()));
+      }
+      else {
+         parking.set(i, null);
+         remainingSpace++;
+      }
    }
 }
 
