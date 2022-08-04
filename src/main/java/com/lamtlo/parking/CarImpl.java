@@ -4,11 +4,13 @@ import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
 public class CarImpl implements Car {
-    private int id;
-    private static int numberOfExistingCar = 0;
+    private final int id;
+    public static final String CAR_TYPE = "Van";
+    // bad
+    private static int NUM_EXISTING_CAR = 0;
 
     public CarImpl() {
-        id = ++numberOfExistingCar;
+        id = ++NUM_EXISTING_CAR;
     }
 
     @Override

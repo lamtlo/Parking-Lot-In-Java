@@ -12,13 +12,56 @@ public class ParkingLot {
    private final int maxCapacity;
    private final List<Car> parking;
    private int remainingSpace;
-   public ParkingLot(int maxCapacity) {
+   private final PaymentService paymentService;
+   private final TowingService towingService;
+
+   public static class Builder {
+      private final int maxCapacity;
+      private final int remainingSpace;
+      private PaymentService paymentService;
+      private TowingService towingService;
+
+      public Builder(int maxCapacity) {
+         this.maxCapacity = maxCapacity;
+         this.remainingSpace = maxCapacity;
+      }
+
+      public Builder paymentService(PaymentService service) {
+         paymentService = service;
+         return this;
+      }
+
+      public Builder towingService(TowingService service) {
+         towingService = service;
+         return this;
+      }
+
+      public ParkingLot build() {
+         return new ParkingLot(this);
+      }
+   }
+
+   public ParkingLot(Builder builder) {
+      maxCapacity = builder.maxCapacity;
+      remainingSpace = builder.remainingSpace;
+      parking = new ArrayList<>(maxCapacity);
+      for (int i = 0; i < maxCapacity; i++) {
+         parking.add(null);
+      }
+      paymentService = builder.paymentService;
+      towingService = builder.towingService;
+   }
+
+   // Old constructor, bad
+   private ParkingLot(int maxCapacity, PaymentService paymentService, TowingService towingService) {
       this.maxCapacity = maxCapacity;
       remainingSpace = maxCapacity;
       parking = new ArrayList<>(maxCapacity);
       for (int i = 0; i < maxCapacity; i++) {
          parking.add(null);
       }
+      this.paymentService = paymentService;
+      this.towingService = towingService;
    }
 
    public int getRemainingCapacity() {
@@ -57,6 +100,17 @@ public class ParkingLot {
          parking.set(i, null);
          remainingSpace++;
       }
+   }
+
+   public int payForParking(Car car) {
+      getParkingSpotId(car);
+      return paymentService.computePayment();
+   }
+
+   public void towCar(Car car) {
+      getParkingSpotId(car);
+      removeCarFromParkingSpace(car);
+      towingService.tow(car);
    }
 }
 
